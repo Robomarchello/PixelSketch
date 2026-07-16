@@ -10,7 +10,7 @@
         "~/.micropico-stubs/included"
     ],
     "python.analysis.extraPaths": [
+        "./lib",
         "~/.micropico-stubs/included"
-    ],
-    "python.analysis.extraPaths": ["./lib"]
+    ]
 }
