@@ -1,3 +1,4 @@
+# checkout experiments/drawing_prototype_circuit.png for the wiring
 import sys
 sys.path.append('/src')
 
