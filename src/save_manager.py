@@ -1,4 +1,12 @@
-from lib.utils import file_exists
+import os
+
+def file_exists(filename):
+    try:
+        os.stat(filename)
+        return True
+    except OSError:
+        return False
+    
 from config import CHUNK_SIZE
 
 
