@@ -14,7 +14,7 @@ SCREEN_SIZE = SCREEN_W, SCREEN_H = 480, 320
 ENCODER_L_CLK, ENCODER_L_DT = 12, 13
 ENCODER_R_CLK, ENCODER_R_DT = 18, 19
 
-BRUSH_RADIUS = 5
+BRUSH_RADIUS = 3
 
 # define colors to be used
 COLORS_SETUP = [
@@ -49,19 +49,30 @@ def main():
     etcher_pos = [0, 0]
     # Drawing simple shapes to the screen
     while True:
-        utime.sleep_ms(2)
+        utime.sleep_ms(5)
         
-        current_x = encoder_left.value
-        current_y = -encoder_right.value
+        encoder_x = int(encoder_left.value)
+        encoder_y = int(encoder_right.value)
 
-        if current_x != etcher_pos[0]:
-            etcher_pos[0] = int(current_x)
+        if encoder_x != etcher_pos[0]:
+            screen.ellipse(etcher_pos[0], etcher_pos[1], BRUSH_RADIUS, BRUSH_RADIUS, COLORS['BLACK'], False)
+            screen.show_region(etcher_pos[0]-BRUSH_RADIUS, etcher_pos[1] - BRUSH_RADIUS, BRUSH_RADIUS*2+3, BRUSH_RADIUS*2+3)
+            
+            etcher_pos[0] = encoder_x
+
             screen.ellipse(etcher_pos[0], etcher_pos[1], BRUSH_RADIUS, BRUSH_RADIUS, COLORS['BLACK'], True)
+            screen.ellipse(etcher_pos[0], etcher_pos[1], BRUSH_RADIUS, BRUSH_RADIUS, COLORS['RED'], False)
             screen.show_region(etcher_pos[0]-BRUSH_RADIUS, etcher_pos[1] - BRUSH_RADIUS, BRUSH_RADIUS*2+3, BRUSH_RADIUS*2+3)
 
-        if current_y != etcher_pos[0]:
-            etcher_pos[1] = int(current_y)
-            screen.ellipse(etcher_pos[0], etcher_pos[1], BRUSH_RADIUS, BRUSH_RADIUS, COLORS['BLACK'], True)
+        if encoder_y != etcher_pos[1]:
+            screen.ellipse(etcher_pos[0], etcher_pos[1], BRUSH_RADIUS, BRUSH_RADIUS, COLORS['BLACK'], False)
             screen.show_region(etcher_pos[0]-BRUSH_RADIUS, etcher_pos[1] - BRUSH_RADIUS, BRUSH_RADIUS*2+3, BRUSH_RADIUS*2+3)
+            
+            etcher_pos[1] = encoder_y
+
+            screen.ellipse(etcher_pos[0], etcher_pos[1], BRUSH_RADIUS, BRUSH_RADIUS, COLORS['BLACK'], True)
+            screen.ellipse(etcher_pos[0], etcher_pos[1], BRUSH_RADIUS, BRUSH_RADIUS, COLORS['RED'], False)
+            screen.show_region(etcher_pos[0]-BRUSH_RADIUS, etcher_pos[1] - BRUSH_RADIUS, BRUSH_RADIUS*2+3, BRUSH_RADIUS*2+3)
+
 
 main()
