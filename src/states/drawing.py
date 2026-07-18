@@ -1,5 +1,6 @@
 from states.state import State
 from screen_manager import ScreenManager
+from input_manager import InputManager
 from config import *
 
 
@@ -45,6 +46,8 @@ class DrawingState(State):
         self.COLORS = ScreenManager.COLORS
 
         # think of a good way of getting input
+        self.encoder_left = InputManager.encoder_left
+        self.encoder_right = InputManager.encoder_right
 
         self.brush = Brush(
             self.COLORS['BLACK'],
