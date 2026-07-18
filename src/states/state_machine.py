@@ -2,9 +2,8 @@ from states.state import State
 
 
 class StateMachine:
-    def __init__(self, screen_manager, initial_state):
-        self.screen_manager = screen_manager
-        self.state: State = State(self, self.screen_manager) # creating dummy state
+    def __init__(self, initial_state):
+        self.state: State = State(self) # creating dummy state
 
         # start the state
         self.change_state(initial_state)
@@ -15,5 +14,5 @@ class StateMachine:
 
     def change_state(self, new_state):
         self.state.on_exit()
-        self.state = new_state(self, self.screen_manager)
+        self.state = new_state(self)
         self.state.on_enter()

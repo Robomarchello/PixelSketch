@@ -8,7 +8,7 @@ from screen_manager import ScreenManager
 
 class App(StateMachine):
     def __init__(self):
-        super().__init__(ScreenManager, DrawingState)
+        super().__init__(DrawingState)
 
         self.screen = ScreenManager.screen
 
@@ -16,6 +16,7 @@ class App(StateMachine):
         self.screen.fill(ScreenManager.COLORS['WHITE']) 
         self.screen.show()
         while True:
+            # utime.sleep_ms(2)
             self.update()
         
 
