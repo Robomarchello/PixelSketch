@@ -2,19 +2,17 @@ import sys
 sys.path.append('/src')
 
 from states.state_machine import StateMachine
-from states.drawing import DrawingState
+from states.unlock import UnlockState
 from screen_manager import ScreenManager
 
 
 class App(StateMachine):
     def __init__(self):
-        super().__init__(DrawingState)
+        super().__init__(UnlockState)
 
         self.screen = ScreenManager.screen
 
     def loop(self):
-        self.screen.fill(ScreenManager.COLORS['WHITE']) 
-        self.screen.show()
         while True:
             # utime.sleep_ms(2)
             self.update()

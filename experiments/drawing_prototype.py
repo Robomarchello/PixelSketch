@@ -12,7 +12,6 @@ def file_exists(filename):
         return False
 
 from lib.color_setup import screen
-from machine import Pin
 import utime
 import struct
 from drivers.rotary_encoder import RotaryEncoder
@@ -34,6 +33,7 @@ COLORS_SETUP = [
     ("RED", screen.rgb(255, 0, 0)), 
     ("GREEN", screen.rgb(0, 255, 0)), 
     ("BLUE", screen.rgb(0, 0, 255)),
+    ("UI_HG", screen.rgb(255, 106, 19)),
 ]
 
 # Populate lookup table
@@ -55,8 +55,9 @@ encoder_right = RotaryEncoder(
 
 def main():
     # inject save file
-    if file_exists('save.bin'):
-        with open('save.bin', 'rb') as file:
+    save_path = 'image_data.bin'
+    if file_exists(save_path):
+        with open(save_path, 'rb') as file:
             while True:
                 chunk = file.read(CHUNK_SIZE)
                 if not chunk:
@@ -101,8 +102,9 @@ def main():
 try:
     main()
 except Exception as e:
-    print(e)
+    raise e
 finally:
     # write save file
-    with open('save.bin', 'wb') as file:
-        file.write(screen.mvb)
+    # with open('save.bin', 'wb') as file:
+    #     file.write(screen.mvb)
+    pass

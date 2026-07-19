@@ -74,7 +74,8 @@ class DrawingState(State):
         pass
 
     def on_enter(self):
-        pass
+        self.screen.fill(ScreenManager.COLORS['WHITE']) 
+        self.screen.show()
     
     def on_exit(self):
         pass
