@@ -1,13 +1,5 @@
-import os
-
-def file_exists(filename):
-    try:
-        os.stat(filename)
-        return True
-    except OSError:
-        return False
-    
 from config import CHUNK_SIZE
+from src.screen_manager import ScreenManager
 
 
 class SaveManager:
@@ -16,6 +8,7 @@ class SaveManager:
     # *create a folder for saves*
     # then you can just open the most recent one
     screen = None
+    SAVE_PATH = '/save.bin'
     @classmethod
     def initialize(cls, screen):
         cls.screen = screen
@@ -31,15 +24,4 @@ class SaveManager:
 
     @classmethod
     def write_to_screen(cls):
-        if file_exists('save.bin'):
-            with open('save.bin', 'rb') as file:
-                while True:
-                    chunk = file.read(CHUNK_SIZE)
-                    if not chunk:
-                        break
-
-                    binary = bytearray(chunk)
-                    pos = file.tell()
-                    cls.screen.mvb[pos-CHUNK_SIZE:pos] = binary
-        else:
-            return False
+        ScreenManager.write_image_to_screen(cls.SAVE_PATH)

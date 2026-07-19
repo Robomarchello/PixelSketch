@@ -24,6 +24,7 @@ class ScreenManager:
         ("RED", screen.rgb(255, 0, 0)), 
         ("GREEN", screen.rgb(0, 255, 0)), 
         ("BLUE", screen.rgb(0, 0, 255)),
+        ("UI_HG", screen.rgb(255, 106, 19)),
     ]
 
     # Populate lookup table
@@ -36,3 +37,15 @@ class ScreenManager:
     def set_backlight_value(cls, value):
         # goal with this
         cls.pin_led.value(value)
+
+    @classmethod
+    def write_image_to_screen(cls, file_path=None):
+        with open(file_path, 'rb') as file: # type: ignore
+            while True:
+                chunk = file.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+
+                binary = bytearray(chunk)
+                pos = file.tell()
+                cls.screen.mvb[pos-CHUNK_SIZE:pos] = binary
