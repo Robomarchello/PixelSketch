@@ -45,30 +45,40 @@ class DrawingState(State):
         self.screen = ScreenManager.screen
         self.COLORS = ScreenManager.COLORS
 
-        # think of a good way of getting input
         self.encoder_left = InputManager.encoder_left
         self.encoder_right = InputManager.encoder_right
 
         self.brush = Brush(
-            self.COLORS['BLACK'],
+            [SCREEN_W // 2, SCREEN_H // 2],
             self.COLORS['RED'],
             radius=2
         )
 
-    def draw(self):
-        # Drawing simple shapes to the screen
-        encoder_x = int(self.encoder_left.value) * 2
-        encoder_y = int(self.encoder_right.value) * 2
+        self.last_encoder_x = int(self.encoder_left.value)
+        self.last_encoder_y = int(self.encoder_right.value)
 
-        if encoder_x != self.brush.pos[0]:
+    def draw(self, update=False):
+        curr_encoder_x = int(self.encoder_left.value)
+        curr_encoder_y = int(self.encoder_right.value)
+
+        # Calculate position change (deltas)
+        dx = (curr_encoder_x - self.last_encoder_x) * 2
+        dy = (curr_encoder_y - self.last_encoder_y) * 2
+
+        # keeping this separated for now, because could simplify logic
+        # when filling spaces between two draw positions.
+        if dx != 0 or update:
             self.brush.erase_tooltip()
-            self.brush.pos[0] = encoder_x
+            self.brush.pos[0] += dx
             self.brush.draw_circle()
 
-        if encoder_y != self.brush.pos[1]:
+        if dy != 0 or update:
             self.brush.erase_tooltip()
-            self.brush.pos[1] = encoder_y
+            self.brush.pos[1] += dy
             self.brush.draw_circle()
+
+        self.last_encoder_x = curr_encoder_x
+        self.last_encoder_y = curr_encoder_y
 
     def update(self):
         pass
