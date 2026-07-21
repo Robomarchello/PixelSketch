@@ -1,5 +1,6 @@
 # My rotary encoder implementation for RPI pico:)
-from machine import Pin
+import micropython
+from machine import Pin, Timer
 
 # 11 <-> 01 <-> 00 <-> 10 <-> 11
 class states:
@@ -26,23 +27,57 @@ TRANSITION_MATRIX = [
 
 
 class RotaryEncoder:
-    def __init__(self, pin_a, pin_b, decoding=1, default_value=0):
+    DEBOUNCE_TIMER_MS = 50
+    def __init__(self, pin_a, pin_b, button_pin, decoding=1, default_value=0):
         self.signal_a = Pin(pin_a, Pin.IN, Pin.PULL_UP)
         self.signal_b = Pin(pin_b, Pin.IN, Pin.PULL_UP)
+        self.button = Pin(button_pin, Pin.IN, Pin.PULL_UP)
 
         self.decoding = decoding
 
-        self.signal_a.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.handle_change)
-        self.signal_b.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.handle_change)
+        self.signal_a.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self._handle_rot_change)
+        self.signal_b.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self._handle_rot_change)
+        self.button.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self._handle_button_change)
 
         self.state = states.UNDEFINED
 
         self.value = default_value
         self.debug_calls = 0
 
-        self.handle_change()
+        self.button_pressed = False
+        self.is_debouncing = False
+        # Allocate a single timer instance upfront
+        self.debounce_timer = Timer(-1)
 
-    def handle_change(self, pin=None):
+        self.func = None
+        
+        self._handle_rot_change()
+
+    def _debounce_callback(self, timer):
+        stable_state = self.button.value()
+
+        if stable_state != self.button_pressed:
+            self.button_pressed = stable_state
+            if self.button_pressed == 0:
+                if self._on_press is not None:
+                    micropython.schedule(self._on_press, ())
+                
+        self.is_debouncing = False
+
+    def _on_press(self, timer):
+        if self.func is not None:
+            self.func()
+
+    def _handle_button_change(self, pin):
+        if not self.is_debouncing:
+            self.is_debouncing = True
+            self.debounce_timer.init(
+                mode=Timer.ONE_SHOT, 
+                period=self.DEBOUNCE_TIMER_MS, 
+                callback=self._debounce_callback
+            )
+
+    def _handle_rot_change(self, pin=None):
         code = (self.signal_a.value() << 1) | self.signal_b.value()
         new_state = TRANSITION_MATRIX[self.state][code]
 
@@ -66,8 +101,16 @@ if __name__ == '__main__':
 
     SIGNAL_A_PIN = 0
     SIGNAL_B_PIN = 0
+    BUTTON_PIN = 0
 
-    encoder = RotaryEncoder(SIGNAL_A_PIN, SIGNAL_B_PIN, decoding=2)
+    def test_func(encoder):
+        if encoder.button_pressed:
+            print('button pressed')
+        else:
+            print('button unpressed')
+
+    encoder = RotaryEncoder(SIGNAL_A_PIN, SIGNAL_B_PIN, BUTTON_PIN, decoding=2)
+    encoder.func = test_func
     last_value = encoder.value
     while True:
         if last_value != encoder.value:
