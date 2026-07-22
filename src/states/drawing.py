@@ -1,3 +1,4 @@
+from math import floor, sqrt
 from states.state import State
 from screen_manager import ScreenManager
 from input_manager import InputManager
@@ -13,6 +14,7 @@ class Brush:
     def __init__(self, position, tooltip_color, radius=2):
         self.pos = position
         self.radius = 3
+        self.move_resolution = 1
         self.update_radius(radius)
 
         self.screen = ScreenManager.screen
@@ -26,13 +28,41 @@ class Brush:
 
         self.changing_radius = False
 
+    def draw_stroke(self, dx, dy, update):
+        # assumes we draw either horizontal or vertical lines.
+        curr_x = int(self.pos[0])
+        curr_y = int(self.pos[1])
+
+        if dx != 0:
+            self.erase_tooltip()
+            l_bound = min(0, dx)
+            r_bound = max(0, dx)
+            for dx_step in (list(range(l_bound, r_bound, self.move_resolution)) + [dx]):
+                self.pos[0] = curr_x + dx_step
+                self.draw_circle()
+
+        if dy != 0:
+            self.erase_tooltip()
+            l_bound = min(0, dy)
+            r_bound = max(0, dy)
+            for dy_step in (list(range(l_bound, r_bound, self.move_resolution)) + [dy]):
+                self.pos[1] = curr_y + dy_step
+                self.draw_circle()
+
+        if update:
+            self.erase_tooltip()
+            self.draw_circle()
+
+        self.draw_tooltip()
 
     def draw_circle(self):
         if self.mode == 'draw':
             self.screen.ellipse(self.pos[0], self.pos[1], self.radius, self.radius, self.brush_color, True)
         elif self.mode == 'erase':
             self.screen.ellipse(self.pos[0], self.pos[1], self.radius, self.radius, self.bg_color, True)
+        self._refresh()
 
+    def draw_tooltip(self):
         # tooltip
         self.screen.ellipse(self.pos[0], self.pos[1], self.radius, self.radius, self.tooltip_color, False)
         self._refresh()
@@ -63,6 +93,14 @@ class Brush:
         self.radius = max(0, self.radius)
         self.pad = self.radius * 2 + 3
 
+        if self.radius == 0:
+            self.move_resolution = 1
+        else:
+            # formula for calculating flat parallel lines on pixelated circle.
+            self.move_resolution = 2 * floor(sqrt(self.radius - 0.25)) + 1
+
+        print(self.radius, self.move_resolution)
+                
     def update_radius_by(self, change):
         self.erase_tooltip()
         radius = self.radius + change
@@ -70,6 +108,7 @@ class Brush:
 
 
 class DrawingState(State):
+    ENCODER_STEP = 10
     def __init__(self, state_machine):
         self.state_machine = state_machine
         self.screen = ScreenManager.screen
@@ -107,17 +146,17 @@ class DrawingState(State):
         curr_encoder_y = int(self.encoder_right.value)
 
         # Calculate position change (deltas)
-        dx = (curr_encoder_x - self.last_encoder_x) * 2
-        dy = (curr_encoder_y - self.last_encoder_y) * 2
+        dx = (curr_encoder_x - self.last_encoder_x) * self.ENCODER_STEP
+        dy = (curr_encoder_y - self.last_encoder_y) * self.ENCODER_STEP
 
         if dx != 0 and self.encoder_left.button_pressed:
-            self.brush.update_radius_by(dx // 2)
+            self.brush.update_radius_by(dx // self.ENCODER_STEP)
             if not self.radius_updated:
                 self.radius_updated = True
             dx = 0
             update = True
 
-        if dy != 0 and self.encoder_left.button_pressed:
+        if dy != 0 and self.encoder_right.button_pressed:
             self.brush.toggle_color()
 
             dy = 0
@@ -125,17 +164,7 @@ class DrawingState(State):
 
         # keeping this separated for now, because could simplify logic
         # when filling spaces between two draw positions.
-        if dx != 0 or update:
-            self.brush.erase_tooltip()
-            self.brush.pos[0] += dx
-            self.brush.draw_circle()
-
-            self.encoder_l_rotated = True
-
-        if dy != 0 or update:
-            self.brush.erase_tooltip()
-            self.brush.pos[1] += dy
-            self.brush.draw_circle()
+        self.brush.draw_stroke(dx, dy, update)
 
         self.last_encoder_x = curr_encoder_x
         self.last_encoder_y = curr_encoder_y
