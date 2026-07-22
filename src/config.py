@@ -1,4 +1,3 @@
-
 # --- Screen configuration
 SCREEN_SIZE = SCREEN_W, SCREEN_H = 480, 320
 # display pins
@@ -11,9 +10,10 @@ LCD_LED = const(8)
 # screen spi (24 MHz max speed on pico)
 BAUD_RATE = 24_000_000
 
-ENCODER_L_CLK, ENCODER_L_DT = 12, 13
-ENCODER_R_CLK, ENCODER_R_DT = 18, 19
+ENCODER_L_CLK, ENCODER_L_DT, ENCODER_L_SW = 12, 13, 10
+ENCODER_R_CLK, ENCODER_R_DT, ENCODER_R_SW = 18, 19, 21
 
 BRUSH_RADIUS = 3
+BG_COLOR = 'WHITE'
 
 CHUNK_SIZE = 512

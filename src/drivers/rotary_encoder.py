@@ -35,17 +35,26 @@ class RotaryEncoder:
 
         self.decoding = decoding
 
-        self.signal_a.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self._handle_rot_change)
-        self.signal_b.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self._handle_rot_change)
-        self.button.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self._handle_button_change)
+        self.signal_a.irq(
+            trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, 
+            handler=self._handle_rot_change
+        )
+        self.signal_b.irq(
+            trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, 
+            handler=self._handle_rot_change
+        )
+        self.button.irq(
+            trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, 
+            handler=self._handle_button_change
+        )
 
         self.state = states.UNDEFINED
 
         self.value = default_value
         self.debug_calls = 0
 
+        # True = Pressed, False = Released
         self.button_pressed = False
-        self.is_debouncing = False
         # Allocate a single timer instance upfront
         self.debounce_timer = Timer(-1)
 
@@ -54,28 +63,23 @@ class RotaryEncoder:
         self._handle_rot_change()
 
     def _debounce_callback(self, timer):
-        stable_state = self.button.value()
+        stable_state = not self.button.value()
 
         if stable_state != self.button_pressed:
             self.button_pressed = stable_state
-            if self.button_pressed == 0:
-                if self._on_press is not None:
-                    micropython.schedule(self._on_press, ())
+            if self._on_change is not None:
+                micropython.schedule(self._on_change, ())
                 
-        self.is_debouncing = False
-
-    def _on_press(self, timer):
+    def _on_change(self, arg):
         if self.func is not None:
             self.func()
 
     def _handle_button_change(self, pin):
-        if not self.is_debouncing:
-            self.is_debouncing = True
-            self.debounce_timer.init(
-                mode=Timer.ONE_SHOT, 
-                period=self.DEBOUNCE_TIMER_MS, 
-                callback=self._debounce_callback
-            )
+        self.debounce_timer.init(
+            mode=Timer.ONE_SHOT,
+            period=self.DEBOUNCE_TIMER_MS,
+            callback=self._debounce_callback,
+        )
 
     def _handle_rot_change(self, pin=None):
         code = (self.signal_a.value() << 1) | self.signal_b.value()
