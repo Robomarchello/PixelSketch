@@ -22,8 +22,11 @@ class ScreenManager:
         ("BLACK", screen.rgb(0, 0, 0)), 
         ("WHITE", screen.rgb(255, 255, 255)), 
         ("RED", screen.rgb(255, 0, 0)), 
-        ("GREEN", screen.rgb(0, 255, 0)), 
-        ("BLUE", screen.rgb(0, 0, 255)),
+        ("GREEN", screen.rgb(42, 176, 21)), 
+        ("BLUE", screen.rgb(30, 50, 200)),
+        ("CYAN", screen.rgb(0, 245, 212)),
+        ("YELLOW", screen.rgb(255, 209, 34)),
+        ("PURPLE", screen.rgb(250, 3, 253)),
         ("UI_HG", screen.rgb(255, 106, 19)),
     ]
 

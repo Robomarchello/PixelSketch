@@ -8,7 +8,7 @@ from config import *
 class Brush:
     # TODO: use interpolation to draw circles between 2 positions, 
     # or a circle + a rectangle because we move one direction (l, r, u, d)
-    BRUSH_COLORS = ['BLACK', 'BLUE', 'GREEN']
+    BRUSH_COLORS = ['BLACK', 'YELLOW', 'BLUE', 'CYAN', 'GREEN', 'PURPLE']
     MODES = ['draw', 'erase']
 
     def __init__(self, position, tooltip_color, radius=2):
@@ -98,8 +98,6 @@ class Brush:
         else:
             # formula for calculating flat parallel lines on pixelated circle.
             self.move_resolution = 2 * floor(sqrt(self.radius - 0.25)) + 1
-
-        print(self.radius, self.move_resolution)
                 
     def update_radius_by(self, change):
         self.erase_tooltip()
@@ -108,7 +106,7 @@ class Brush:
 
 
 class DrawingState(State):
-    ENCODER_STEP = 10
+    ENCODER_STEP = 2
     def __init__(self, state_machine):
         self.state_machine = state_machine
         self.screen = ScreenManager.screen
@@ -123,12 +121,17 @@ class DrawingState(State):
             radius=2
         )
         self.encoder_left.func = self.toggle_brush_mode
-        self.encoder_right.func = self.brush.toggle_color
+        self.encoder_right.func = self.toggle_brush_color
 
         self.last_encoder_x = int(self.encoder_left.value)
         self.last_encoder_y = int(self.encoder_right.value)
 
         self.radius_updated = False
+
+    def toggle_brush_color(self):
+        if not self.encoder_right.button_pressed:
+            self.brush.toggle_color()
+            self.brush.draw_stroke(0, 0, True)
 
     def toggle_brush_mode(self):
         if self.encoder_left.button_pressed:
@@ -139,7 +142,7 @@ class DrawingState(State):
                 self.radius_updated = False
                 return
             self.brush.toggle_mode()
-            self.draw(update=True)
+            self.brush.draw_stroke(0, 0, True)
 
     def draw(self, update=False):
         curr_encoder_x = int(self.encoder_left.value)
@@ -154,12 +157,6 @@ class DrawingState(State):
             if not self.radius_updated:
                 self.radius_updated = True
             dx = 0
-            update = True
-
-        if dy != 0 and self.encoder_right.button_pressed:
-            self.brush.toggle_color()
-
-            dy = 0
             update = True
 
         # keeping this separated for now, because could simplify logic

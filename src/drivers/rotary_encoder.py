@@ -58,6 +58,8 @@ class RotaryEncoder:
         # Allocate a single timer instance upfront
         self.debounce_timer = Timer(-1)
 
+        self._schedule = False
+
         self.func = None
         
         self._handle_rot_change()
@@ -68,7 +70,12 @@ class RotaryEncoder:
         if stable_state != self.button_pressed:
             self.button_pressed = stable_state
             if self._on_change is not None:
-                micropython.schedule(self._on_change, ())
+                try:
+                    self._scheduled = True
+                    micropython.schedule(self._on_change, 0)
+                except RuntimeError:
+                    # Fallback if queue is somehow full
+                    self._scheduled = False
                 
     def _on_change(self, arg):
         if self.func is not None:
