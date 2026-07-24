@@ -42,7 +42,7 @@ class ScreenManager:
         cls.pin_led.value(value)
 
     @classmethod
-    def write_image_to_screen(cls, file_path=None):
+    def write_image_to_screen(cls, file_path):
         with open(file_path, 'rb') as file: # type: ignore
             while True:
                 chunk = file.read(CHUNK_SIZE)
@@ -52,3 +52,19 @@ class ScreenManager:
                 binary = bytearray(chunk)
                 pos = file.tell()
                 cls.screen.mvb[pos-CHUNK_SIZE:pos] = binary
+
+    @classmethod
+    def write_image_shunk(cls, file_path, start_pos):
+        screen = cls.screen.mvb
+        half_screen_w = SCREEN_W // 2 
+        half_screen_h = SCREEN_H // 2
+    
+        index_pos =  (start_pos[0] + start_pos[1] * SCREEN_W ) // 2
+
+        with open(file_path, 'rb') as file: # type: ignore
+            for y in range(half_screen_h):
+                row = file.read(half_screen_w)
+                for x in range(0, half_screen_w - 1, 2):
+                    position = (x + y * SCREEN_W ) // 2 + index_pos
+                    screen[position] = (row[x] << 4) | row[x + 1]
+                file.seek(y * SCREEN_W)
