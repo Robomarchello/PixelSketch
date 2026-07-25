@@ -1,4 +1,5 @@
 from math import floor, sqrt
+from machine import Timer
 from states.state import State
 from screen_manager import ScreenManager
 from input_manager import InputManager
@@ -128,6 +129,10 @@ class DrawingState(State):
 
         self.radius_updated = False
 
+        self.gyro_poll_timer = Timer(-1)
+        self.check_gyro = False
+        self.gyro_start_timer()
+
     def toggle_brush_color(self):
         if not self.encoder_right.button_pressed:
             self.brush.toggle_color()
@@ -144,13 +149,13 @@ class DrawingState(State):
             self.brush.toggle_mode()
             self.brush.draw_stroke(0, 0, True)
 
-    def draw(self, update=False):
+    def draw(self, update=False): # could name this logic instead
         curr_encoder_x = int(self.encoder_left.value)
         curr_encoder_y = int(self.encoder_right.value)
 
         # Calculate position change (deltas)
         dx = (curr_encoder_x - self.last_encoder_x) * self.ENCODER_STEP
-        dy = (curr_encoder_y - self.last_encoder_y) * self.ENCODER_STEP
+        dy = -(curr_encoder_y - self.last_encoder_y) * self.ENCODER_STEP
 
         if dx != 0 and self.encoder_left.button_pressed:
             self.brush.update_radius_by(dx // self.ENCODER_STEP)
@@ -166,13 +171,32 @@ class DrawingState(State):
         self.last_encoder_x = curr_encoder_x
         self.last_encoder_y = curr_encoder_y
 
-    def update(self):
-        pass
+        if self.check_gyro:
+            self.gyro_work()
+
+    def gyro_start_timer(self):
+        self.gyro_poll_timer.init(
+            mode=Timer.PERIODIC,
+            period=GYRO_POLL_MS,
+            callback=self.gyro_isr
+        )
+
+    def gyro_work(self):
+        x, y, z = InputManager.motion_sensor.accel.xyz
+        magnitude_squared = x * x + y * y + z * z
+
+        if magnitude_squared > SHAKE_THRESHOLD:
+            self.screen.fill(ScreenManager.COLORS[BG_COLOR])
+
+    def gyro_isr(self, timer):
+        self.check_gyro = True
 
     def on_enter(self):
         self.screen.fill(ScreenManager.COLORS['WHITE']) 
         self.screen.show()
+
+        self.draw(True)
     
     def on_exit(self):
-        pass
+        self.gyro_poll_timer.deinit()
     
