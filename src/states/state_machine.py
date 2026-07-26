@@ -12,7 +12,7 @@ class StateMachine:
         self.state.update()
         self.state.draw()
 
-    def change_state(self, new_state):
+    def change_state(self, new_state_instance):
         self.state.on_exit()
-        self.state = new_state(self)
+        self.state = new_state_instance
         self.state.on_enter()

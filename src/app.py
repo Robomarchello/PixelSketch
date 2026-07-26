@@ -3,12 +3,13 @@ sys.path.append('/src')
 
 from states.state_machine import StateMachine
 from states.unlock import UnlockState
+from src.states.gallery import GalleryState
 from screen_manager import ScreenManager
 
 
 class App(StateMachine):
     def __init__(self):
-        super().__init__(UnlockState)
+        super().__init__(GalleryState(self))
 
         self.screen = ScreenManager.screen
 

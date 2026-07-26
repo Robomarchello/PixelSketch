@@ -1,9 +1,11 @@
 from math import floor, sqrt
 from machine import Timer
+from src.states.gallery import GalleryState
 from states.state import State
 from screen_manager import ScreenManager
 from input_manager import InputManager
 from config import *
+import utime
 
 
 class Brush:
@@ -108,6 +110,7 @@ class Brush:
 
 class DrawingState(State):
     ENCODER_STEP = 2
+    DUAL_HOLD_MS = 1000
     def __init__(self, state_machine):
         self.state_machine = state_machine
         self.screen = ScreenManager.screen
@@ -133,12 +136,30 @@ class DrawingState(State):
         self.check_gyro = False
         self.gyro_start_timer()
 
+        self.save_path = None
+        self.file_exists = False
+
+        # Dual hold variables
+        self.both_pressed_start = None
+        self.dual_hold_triggered = False
+
+    def on_dual_hold_triggered(self):
+        InputManager.disable_input()
+        self.brush.erase_tooltip()
+        self.state_machine.change_state(GalleryState(self.state_machine))
+
     def toggle_brush_color(self):
+        if self.dual_hold_triggered:
+            return
+        
         if not self.encoder_right.button_pressed:
             self.brush.toggle_color()
             self.brush.draw_stroke(0, 0, True)
 
     def toggle_brush_mode(self):
+        if self.dual_hold_triggered:
+            return
+        
         if self.encoder_left.button_pressed:
             self.radius_updated = False
 
@@ -148,6 +169,28 @@ class DrawingState(State):
                 return
             self.brush.toggle_mode()
             self.brush.draw_stroke(0, 0, True)
+
+    def check_dual_hold(self):
+        # tbh, asked ai to write this function
+        
+        left_pressed = self.encoder_left.button_pressed
+        right_pressed = self.encoder_right.button_pressed
+
+        if left_pressed and right_pressed:
+            if self.both_pressed_start is None:
+                self.both_pressed_start = utime.ticks_ms()
+
+            # Check if held past threshold
+            elif not self.dual_hold_triggered:
+                elapsed = utime.ticks_diff(utime.ticks_ms(), self.both_pressed_start)
+                if elapsed >= self.DUAL_HOLD_MS:
+                    self.dual_hold_triggered = True
+                    self.on_dual_hold_triggered()
+        else:
+            self.both_pressed_start = None
+            
+            if not left_pressed and not right_pressed:
+                self.dual_hold_triggered = False
 
     def draw(self, update=False): # could name this logic instead
         curr_encoder_x = int(self.encoder_left.value)
@@ -174,6 +217,8 @@ class DrawingState(State):
         if self.check_gyro:
             self.gyro_work()
 
+        self.check_dual_hold()
+
     def gyro_start_timer(self):
         self.gyro_poll_timer.init(
             mode=Timer.PERIODIC,
@@ -191,12 +236,23 @@ class DrawingState(State):
     def gyro_isr(self, timer):
         self.check_gyro = True
 
+    def load_save_slot(self):
+        if self.file_exists:
+            ScreenManager.write_image_to_screen(self.save_path)
+        else: 
+            self.screen.fill(ScreenManager.COLORS['WHITE']) 
+
+    def write_save_slot(self):
+        ScreenManager.save_screen_as_file(self.save_path)
+
     def on_enter(self):
-        self.screen.fill(ScreenManager.COLORS['WHITE']) 
-        self.screen.show()
+        self.load_save_slot()
 
         self.draw(True)
+        self.screen.show()
+
+        InputManager.enable_input()
     
     def on_exit(self):
+        self.write_save_slot()
         self.gyro_poll_timer.deinit()
-    

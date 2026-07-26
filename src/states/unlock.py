@@ -14,7 +14,6 @@ class UnlockState(State):
         self.screen = ScreenManager.screen
         self.COLORS = ScreenManager.COLORS
 
-        # think of a good way of getting input
         self.encoder_left = InputManager.encoder_left
         self.encoder_right = InputManager.encoder_right
 
@@ -62,12 +61,14 @@ class UnlockState(State):
             self.last_encoder_r = encoder_r
 
         if self.x >= self.x_right:
-            self.state_machine.change_state(DrawingState)
+            self.state_machine.change_state(DrawingState(self.state_machine))
 
     def on_enter(self):
         ScreenManager.write_image_to_screen(self.UI_path)
         ScreenManager.screen.show()
 
+        InputManager.enable_input()
+
     def on_exit(self):
-        pass
+        InputManager.disable_input()
     

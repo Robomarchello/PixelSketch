@@ -24,10 +24,10 @@ class ScreenManager:
         ("RED", screen.rgb(255, 0, 0)), 
         ("GREEN", screen.rgb(42, 176, 21)), 
         ("BLUE", screen.rgb(30, 50, 200)),
+        ("UI_HG", screen.rgb(255, 106, 19)),
         ("CYAN", screen.rgb(0, 245, 212)),
         ("YELLOW", screen.rgb(255, 209, 34)),
         ("PURPLE", screen.rgb(250, 3, 253)),
-        ("UI_HG", screen.rgb(255, 106, 19)),
     ]
 
     # Populate lookup table
@@ -40,6 +40,11 @@ class ScreenManager:
     def set_backlight_value(cls, value):
         # goal with this
         cls.pin_led.value(value)
+
+    @classmethod
+    def save_screen_as_file(cls, file_path):
+        with open(file_path, 'wb') as file:
+            file.write(cls.screen.mvb)
 
     @classmethod
     def write_image_to_screen(cls, file_path):

@@ -35,6 +35,24 @@ class RotaryEncoder:
 
         self.decoding = decoding
 
+        self.enable_irq()
+
+        self.state = states.UNDEFINED
+
+        self.value = default_value
+
+        # True = Pressed, False = Released
+        self.button_pressed = False
+        # Allocate a single timer instance upfront
+        self.debounce_timer = Timer(-1)
+
+        self._schedule = False
+
+        self.func = None
+        
+        self._handle_rot_change()
+
+    def enable_irq(self):
         self.signal_a.irq(
             trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, 
             handler=self._handle_rot_change
@@ -48,21 +66,12 @@ class RotaryEncoder:
             handler=self._handle_button_change
         )
 
-        self.state = states.UNDEFINED
+    def disable_irq(self):
+        self.signal_a.irq(handler=None)
+        self.signal_b.irq(handler=None)
+        self.button.irq(handler=None)
 
-        self.value = default_value
-        self.debug_calls = 0
-
-        # True = Pressed, False = Released
         self.button_pressed = False
-        # Allocate a single timer instance upfront
-        self.debounce_timer = Timer(-1)
-
-        self._schedule = False
-
-        self.func = None
-        
-        self._handle_rot_change()
 
     def _debounce_callback(self, timer):
         stable_state = not self.button.value()
@@ -104,7 +113,6 @@ class RotaryEncoder:
             self.value -= 1
 
         self.state = new_state 
-        self.debug_calls += 1
         
 
 if __name__ == '__main__':

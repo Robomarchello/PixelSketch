@@ -27,3 +27,13 @@ class InputManager:
     # gyro_range options: 0 (+/-250 deg/s), 1 (+/-500 deg/s), 2 (+/-1000 deg/s), 3 (+/-2000 deg/s)
     motion_sensor.accel_range = 0
     # motion_sensor.gyro_range = 0 # we need only accel
+
+    @classmethod
+    def disable_input(cls):
+        cls.encoder_left.disable_irq()
+        cls.encoder_right.disable_irq()
+
+    @classmethod
+    def enable_input(cls):
+        cls.encoder_left.enable_irq()
+        cls.encoder_right.enable_irq()
