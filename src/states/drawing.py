@@ -1,6 +1,6 @@
 from math import floor, sqrt
 from machine import Timer
-from src.states.gallery import GalleryState
+import src.states.gallery
 from states.state import State
 from screen_manager import ScreenManager
 from input_manager import InputManager
@@ -146,7 +146,8 @@ class DrawingState(State):
     def on_dual_hold_triggered(self):
         InputManager.disable_input()
         self.brush.erase_tooltip()
-        self.state_machine.change_state(GalleryState(self.state_machine))
+        state = src.states.gallery.GalleryState(self.state_machine)
+        self.state_machine.change_state(state)
 
     def toggle_brush_color(self):
         if self.dual_hold_triggered:

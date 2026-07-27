@@ -7,6 +7,8 @@ LCD_CS = const(5)
 LCD_CLK = const(2)
 LCD_MOSI = const(3)
 LCD_LED = const(8)
+
+BATTERY_READING_PIN = const(28)
 # screen spi (24 MHz max speed on pico)
 BAUD_RATE = 24_000_000
 

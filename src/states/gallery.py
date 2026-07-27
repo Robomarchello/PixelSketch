@@ -6,12 +6,94 @@ def file_exists(filename):
         return True
     except OSError:
         return False
-    
+
+from machine import ADC, Pin
 from states.state import State
 import states.drawing
 from screen_manager import ScreenManager
 from input_manager import InputManager
 from config import *
+
+
+class BatteryMeter:
+    conversion_factor = (3.3 / 65535) * 3 # modify!!
+    VOLTAGE_LEVELS = (
+        (4.08, 100),
+        (3.98, 90),
+        (3.88, 80),
+        (3.80, 70),
+        (3.73, 60),
+        (3.68, 50),
+        (3.61, 40),
+        (3.53, 30),
+        (3.42, 20),
+        (3.35, 10),
+    )
+    def __init__(self):
+        self.screen = ScreenManager.screen
+        self.COLORS = ScreenManager.COLORS
+
+        self.battery_pin = Pin(BATTERY_READING_PIN, mode=Pin.IN)
+        self.adc = ADC(self.battery_pin)
+
+        self.cell_count = 5
+        self.charge_per_cell = 100 // self.cell_count
+        
+        self.voltage = 0.0
+        self.battery_level = 0
+        self.cells_filled = 0
+
+        # for drawing
+        self.bat_position = (417, 289)
+        self.cell_size = (8, 20)
+        self.x_spacing = 2
+        self.spacing_total = self.cell_size[0] + self.x_spacing
+
+    def draw(self):
+        self.screen.fill_rect(
+            self.bat_position[0], 
+            self.bat_position[1], 
+            (self.cell_size[0] + self.x_spacing) * self.cell_count, 
+            self.cell_size[1], 
+            self.COLORS['BLACK']
+        )
+
+        for i in range(self.cells_filled):
+            x_offset = self.spacing_total * i
+            self.screen.fill_rect(
+                self.bat_position[0] + x_offset, 
+                self.bat_position[1], 
+                self.cell_size[0], 
+                self.cell_size[1], 
+                self.COLORS['WHITE']
+            )
+
+        self.screen.show_region(
+            self.bat_position[0], 
+            self.bat_position[1], 
+            (self.cell_size[0] + self.x_spacing) * self.cell_count, 
+            self.cell_size[1], 
+        )
+
+    def get_voltage(self):
+        raw_reading = self.adc.read_u16()
+        
+        self.voltage = raw_reading * self.conversion_factor
+        print(f"VSYS Input Voltage: {self.voltage:.2f} V")
+
+    def get_voltage(self):
+        # DUMMY FUNCTION!!!
+        print('dummy')
+        self.voltage = 3.9
+        self.voltage_to_battery_level()
+
+    def voltage_to_battery_level(self):
+        for voltage, charge in self.VOLTAGE_LEVELS:
+            if self.voltage > voltage:
+                self.battery_level = charge
+                self.cells_filled = self.battery_level // self.charge_per_cell
+                return
+        self.battery_level = 0
 
 
 class GalleryState(State):
@@ -35,6 +117,7 @@ class GalleryState(State):
 
         self.change_state = False
         self.encoder_left.func = self.open_draw_isr
+        self.encoder_right.func = self.delete_file
 
         self.last_encoder_x = int(self.encoder_left.value)
         self.last_encoder_y = int(self.encoder_right.value)
@@ -48,6 +131,12 @@ class GalleryState(State):
         self.file_exists = False
 
         self.redraw_info = True
+
+        self.battery_meter = BatteryMeter()
+
+    def delete_file(self):
+        if self.file_exists:
+            os.remove(self.slot_path)
 
         self.update_file_info()
 
@@ -83,6 +172,8 @@ class GalleryState(State):
         if self.redraw_info:
             self.write_slot_img()
             self.draw_slot_info()
+
+            self.battery_meter.draw()
 
             self.redraw_info = False
 
@@ -180,10 +271,13 @@ class GalleryState(State):
             os.mkdir(self.SAVE_path)
 
     def on_enter(self):
+        self.update_file_info()
         ScreenManager.write_image_to_screen(self.UI_path)
         ScreenManager.screen.show()
 
         InputManager.enable_input()
+
+        self.battery_meter.get_voltage()
 
     def on_exit(self):
         InputManager.disable_input()

@@ -1,5 +1,5 @@
 from states.state import State
-from states.drawing import DrawingState
+from src.states.gallery import GalleryState
 from screen_manager import ScreenManager
 from input_manager import InputManager
 from config import *
@@ -61,7 +61,7 @@ class UnlockState(State):
             self.last_encoder_r = encoder_r
 
         if self.x >= self.x_right:
-            self.state_machine.change_state(DrawingState(self.state_machine))
+            self.state_machine.change_state(GalleryState(self.state_machine))
 
     def on_enter(self):
         ScreenManager.write_image_to_screen(self.UI_path)
