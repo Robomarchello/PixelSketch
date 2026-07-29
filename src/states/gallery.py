@@ -16,7 +16,7 @@ from config import *
 
 
 class BatteryMeter:
-    conversion_factor = (3.3 / 65535) * 3 # modify!!
+    conversion_factor = (3.3 / 65535) * 2
     VOLTAGE_LEVELS = (
         (4.08, 100),
         (3.98, 90),
@@ -30,6 +30,8 @@ class BatteryMeter:
         (3.35, 10),
     )
     def __init__(self):
+        self.usb_power = Pin('WL_GPIO2', Pin.IN) 
+        
         self.screen = ScreenManager.screen
         self.COLORS = ScreenManager.COLORS
 
@@ -76,16 +78,15 @@ class BatteryMeter:
         )
 
     def get_voltage(self):
-        raw_reading = self.adc.read_u16()
-        
-        self.voltage = raw_reading * self.conversion_factor
-        print(f"VSYS Input Voltage: {self.voltage:.2f} V")
+        if self.usb_power.value():
+            print('Connected via microUSB')
+            self.voltage = 5.0
+        else:
+            raw_reading = self.adc.read_u16()
 
-    def get_voltage(self):
-        # DUMMY FUNCTION!!!
-        print('dummy')
-        self.voltage = 3.9
+            self.voltage = raw_reading * self.conversion_factor
         self.voltage_to_battery_level()
+        print(f"VSYS Input Voltage: {self.voltage:.2f} V")
 
     def voltage_to_battery_level(self):
         for voltage, charge in self.VOLTAGE_LEVELS:
