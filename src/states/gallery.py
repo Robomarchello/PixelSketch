@@ -79,14 +79,13 @@ class BatteryMeter:
 
     def get_voltage(self):
         if self.usb_power.value():
-            print('Connected via microUSB')
+            # Connected via microUSB
             self.voltage = 5.0
         else:
             raw_reading = self.adc.read_u16()
 
             self.voltage = raw_reading * self.conversion_factor
         self.voltage_to_battery_level()
-        print(f"VSYS Input Voltage: {self.voltage:.2f} V")
 
     def voltage_to_battery_level(self):
         for voltage, charge in self.VOLTAGE_LEVELS:
@@ -233,11 +232,10 @@ class GalleryState(State):
             self._draw_date(date_tuple)
             
         else:
-            self.screen.large_text(
+            self.screen.text(
                 'NEW!', 
                 self.infobar_topleft[0], 
                 self.infobar_topleft[1], 
-                2, 
                 self.COLORS['WHITE']
             )
         ScreenManager.screen.show_region(
@@ -249,21 +247,19 @@ class GalleryState(State):
 
     def _draw_date(self, date_tuple):
         date_formatted = f'{date_tuple[2]}.{date_tuple[1]}.{date_tuple[0]}'
-        self.screen.large_text(
+        self.screen.text(
             date_formatted, 
             self.infobar_topleft[0], 
             self.infobar_topleft[1], 
-            1, 
             self.COLORS['WHITE']
         )
 
     def _draw_slot_count(self):
         slot_info = f'Slot {self.slot_index+1}/{self.SLOTS}'
-        self.screen.large_text(
+        self.screen.text(
             slot_info, 
             295, 
             self.infobar_topleft[1], 
-            1, 
             self.COLORS['WHITE']
         )
 

@@ -18,7 +18,7 @@ class InputManager:
     )
 
     # motion sensor
-    _i2c = I2C(1, scl=Pin(27), sda=Pin(26), freq=100000)
+    _i2c = I2C(1, scl=Pin(MOTION_SCL), sda=Pin(MOTION_SDA), freq=100000)
     _devices = _i2c.scan()
     motion_sensor = MPU6050(_i2c)
 

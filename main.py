@@ -1,4 +1,4 @@
-from src.app import App
+from src.app import App, run_with_error_screen
 
 if __name__ == '__main__':
-    App().loop()
+    run_with_error_screen(App().loop)

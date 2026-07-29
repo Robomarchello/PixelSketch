@@ -9,11 +9,15 @@ LCD_MOSI = const(3)
 LCD_LED = const(8)
 
 BATTERY_READING_PIN = const(28)
+
 # screen spi (24 MHz max speed on pico)
 BAUD_RATE = 24_000_000
 
 ENCODER_L_CLK, ENCODER_L_DT, ENCODER_L_SW = 12, 13, 10
 ENCODER_R_CLK, ENCODER_R_DT, ENCODER_R_SW = 18, 19, 21
+
+MOTION_SCL = const(27)
+MOTION_SDA = const(26)
 
 GYRO_POLL_MS = 50
 SHAKE_THRESHOLD = 2.3
