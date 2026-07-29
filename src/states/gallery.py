@@ -98,7 +98,7 @@ class BatteryMeter:
 
 
 class GalleryState(State):
-    UI_path = '/gallery.bin'
+    UI_path = 'assets/gallery.bin'
     SAVE_path = '/gallery/'
     SAVE_FOLDER_NAME = 'gallery'
     SLOTS = 5

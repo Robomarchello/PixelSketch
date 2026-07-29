@@ -6,7 +6,7 @@ from config import *
 
 
 class UnlockState(State):
-    UI_path = '/unlock.bin'
+    UI_path = 'assets/unlock.bin'
     STEP = 4
     def __init__(self, state_machine):
         self.state_machine = state_machine
