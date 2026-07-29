@@ -19,11 +19,17 @@ def run_with_error_screen(func):
         sys.print_exception(e, buf)
         error_text = buf.getvalue()
 
-        screen.fill(ScreenManager.COLORS['BLACK'])
+        screen.fill(ScreenManager.COLORS['RED'])
         screen.text("An error occured.", 10, 10, ScreenManager.COLORS['WHITE'])
 
         for i, line in enumerate(error_text.splitlines()):
-            screen.text(line, 10, 30 + i * 10)
+            offset = 30 + i * 10
+            screen.text(line, 10, offset, ScreenManager.COLORS['WHITE'])
+
+        with open('assets/error_skull.txt', 'r', encoding='utf-8') as file:
+            for i, line in enumerate(file):
+                offset_new = offset + (i + 3) * 10
+                screen.text(line.rstrip(), 75, offset_new, ScreenManager.COLORS['WHITE'])
 
         screen.show()
 
