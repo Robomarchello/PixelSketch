@@ -229,7 +229,8 @@ class GalleryState(State):
             # Convert the timestamp to a readable date tuple
             # Returns (year, month, mday, hour, minute, second, weekday, yearday)
             date_tuple = time.localtime(mtime)
-            self._draw_date(date_tuple)
+            # scrapped the date idea for now. Commented line
+            # self._draw_date(date_tuple)
             
         else:
             self.screen.text(
