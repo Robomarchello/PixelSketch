@@ -1,25 +1,27 @@
 # --- Screen configuration
 SCREEN_SIZE = SCREEN_W, SCREEN_H = 480, 320
 # display pins
-LCD_DC = const(7)
-LCD_RST = const(6)
-LCD_CS = const(5)
-LCD_CLK = const(2)
-LCD_MOSI = const(3)
-LCD_LED = const(8)
+LCD_DC = const(3)
+LCD_RST = const(4)
+LCD_CS = const(9)
+LCD_CLK = const(6)
+LCD_MOSI = const(7)
+LCD_LED = const(2)
 
 BATTERY_READING_PIN = const(28)
 
 # screen spi (24 MHz max speed on pico)
 BAUD_RATE = 24_000_000
 
-ENCODER_L_CLK, ENCODER_L_DT, ENCODER_L_SW = 12, 13, 10
-ENCODER_R_CLK, ENCODER_R_DT, ENCODER_R_SW = 18, 19, 21
+
+ENCODER_R_CLK, ENCODER_R_DT, ENCODER_R_SW = 12, 11, 13
+ENCODER_L_CLK, ENCODER_L_DT, ENCODER_L_SW = 20, 19, 18
+
 
 MOTION_SCL = const(27)
 MOTION_SDA = const(26)
 
-GYRO_POLL_MS = 50
+GYRO_POLL_MS = 150
 SHAKE_THRESHOLD = 2.3
 SHAKE_THRESHOLD *= SHAKE_THRESHOLD
 

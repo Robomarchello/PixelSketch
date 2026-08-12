@@ -4,7 +4,7 @@ sys.path.append('/src')
 
 from states.state_machine import StateMachine
 from states.unlock import UnlockState
-from src.states.gallery import GalleryState
+from src.states.gallery import GalleryState # remove these states in the final version
 from states.drawing import DrawingState
 from screen_manager import ScreenManager
 
@@ -37,7 +37,7 @@ def run_with_error_screen(func):
 class App(StateMachine):
     def __init__(self):
         self.screen = ScreenManager.screen
-        super().__init__(GalleryState(self))
+        super().__init__(UnlockState(self))
 
     def loop(self):
         while True:

@@ -6,6 +6,7 @@ from screen_manager import ScreenManager
 from input_manager import InputManager
 from config import *
 import utime
+from src.drivers.imu import MPUException
 
 
 class Brush:
@@ -228,11 +229,16 @@ class DrawingState(State):
         )
 
     def gyro_work(self):
-        x, y, z = InputManager.motion_sensor.accel.xyz
-        magnitude_squared = x * x + y * y + z * z
+        try:
+            x, y, z = InputManager.motion_sensor.accel.xyz
 
+        except MPUException:
+            return  # skip this poll, try again next cycle 50ms later
+
+        magnitude_squared = x * x + y * y + z * z
         if magnitude_squared > SHAKE_THRESHOLD:
             self.screen.fill(ScreenManager.COLORS[BG_COLOR])
+            self.screen.show()
 
     def gyro_isr(self, timer):
         self.check_gyro = True

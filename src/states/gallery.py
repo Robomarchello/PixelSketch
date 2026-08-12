@@ -159,7 +159,7 @@ class GalleryState(State):
 
         # Calculate position change (deltas)
         dx = curr_encoder_x - self.last_encoder_x
-        dy = -(curr_encoder_y - self.last_encoder_y)
+        dy = (curr_encoder_y - self.last_encoder_y)
 
         if dx != 0:
             self.toggle_slot(dx)
