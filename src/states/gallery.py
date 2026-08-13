@@ -16,7 +16,8 @@ from config import *
 
 
 class BatteryMeter:
-    conversion_factor = (3.3 / 65535) * 2
+    # calibrated conversion factor with multimeter to getting real voltage (2.12)
+    conversion_factor = (3.3 / 65535) * 2.12791738
     VOLTAGE_LEVELS = (
         (4.08, 100),
         (3.98, 90),

@@ -28,6 +28,7 @@ class InputManager:
             print("I2C scan attempt {}: found {}".format(_attempt + 1, _devices))
             motion_sensor = MPU6050(_i2c)
             print("MPU6050 init succeeded on attempt {}".format(_attempt + 1))
+            motion_sensor._cached_accel_range = motion_sensor.accel_range
             break
         except MPUException as e:
             _last_error = e
