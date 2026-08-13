@@ -153,7 +153,7 @@ class GalleryState(State):
 
             self.state_machine.change_state(new_state)
 
-    def draw(self):
+    def logic(self):
         curr_encoder_x = int(self.encoder_left.value)
         curr_encoder_y = int(self.encoder_right.value)
 

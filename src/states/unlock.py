@@ -1,5 +1,6 @@
 from states.state import State
-from src.states.gallery import GalleryState
+from states.gallery import GalleryState
+import states.debug
 from screen_manager import ScreenManager
 from input_manager import InputManager
 from config import *
@@ -8,6 +9,8 @@ from config import *
 class UnlockState(State):
     UI_path = 'assets/unlock.bin'
     STEP = 4
+    DEBUG_CLICK_NUM = 5
+    
     def __init__(self, state_machine):
         self.state_machine = state_machine
 
@@ -16,6 +19,8 @@ class UnlockState(State):
 
         self.encoder_left = InputManager.encoder_left
         self.encoder_right = InputManager.encoder_right
+
+        self.encoder_right.func = self.register_debug_click
 
         self.min_bound = 52
         self.max_bound = 425
@@ -31,14 +36,18 @@ class UnlockState(State):
         self.x_right = int(self.max_bound)
         self.last_encoder_r = 0
 
-    def draw(self):
-        pass
+        self.debug_clicks = 0
+        
+    # click DEBUG_CLICK_NUM times to enter debug mode
+    def register_debug_click(self):
+        if self.encoder_right.button_pressed:
+            self.debug_clicks += 1
 
-    def draw_rect(self, x, width):
-        self.screen.fill_rect(x, self.y, width, self.h, self.COLORS['WHITE'])
-        self.screen.show_region(x, self.y, width, self.h)
+        if self.debug_clicks >= self.DEBUG_CLICK_NUM:
+            state = states.debug.DebugState(self.state_machine)
+            self.state_machine.change_state(state)
 
-    def update(self):
+    def logic(self):
         encoder_l = int(self.encoder_left.value) * self.STEP
         encoder_r = int(self.encoder_right.value) * self.STEP
 
@@ -62,6 +71,10 @@ class UnlockState(State):
 
         if self.x >= self.x_right:
             self.state_machine.change_state(GalleryState(self.state_machine))
+
+    def draw_rect(self, x, width):
+        self.screen.fill_rect(x, self.y, width, self.h, self.COLORS['WHITE'])
+        self.screen.show_region(x, self.y, width, self.h)
 
     def on_enter(self):
         ScreenManager.write_image_to_screen(self.UI_path)

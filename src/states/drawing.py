@@ -194,7 +194,7 @@ class DrawingState(State):
             if not left_pressed and not right_pressed:
                 self.dual_hold_triggered = False
 
-    def draw(self, update=False): # could name this logic instead
+    def logic(self, update_stroke=False): # could name this logic instead
         curr_encoder_x = int(self.encoder_left.value)
         curr_encoder_y = int(self.encoder_right.value)
 
@@ -207,11 +207,11 @@ class DrawingState(State):
             if not self.radius_updated:
                 self.radius_updated = True
             dx = 0
-            update = True
+            update_stroke = True
 
         # keeping this separated for now, because could simplify logic
         # when filling spaces between two draw positions.
-        self.brush.draw_stroke(dx, dy, update)
+        self.brush.draw_stroke(dx, dy, update_stroke)
 
         self.last_encoder_x = curr_encoder_x
         self.last_encoder_y = curr_encoder_y
@@ -229,16 +229,18 @@ class DrawingState(State):
         )
 
     def gyro_work(self):
+        self.check_gyro = False
         try:
             x, y, z = InputManager.motion_sensor.accel.xyz
 
-        except MPUException:
+        except (MPUException, OSError):
             return  # skip this poll, try again next cycle 50ms later
 
         magnitude_squared = x * x + y * y + z * z
         if magnitude_squared > SHAKE_THRESHOLD:
             self.screen.fill(ScreenManager.COLORS[BG_COLOR])
             self.screen.show()
+
 
     def gyro_isr(self, timer):
         self.check_gyro = True
@@ -255,7 +257,7 @@ class DrawingState(State):
     def on_enter(self):
         self.load_save_slot()
 
-        self.draw(True)
+        self.logic(True)
         self.screen.show()
 
         InputManager.enable_input()

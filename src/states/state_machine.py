@@ -9,8 +9,7 @@ class StateMachine:
         self.change_state(initial_state)
 
     def update(self):
-        self.state.update()
-        self.state.draw()
+        self.state.logic()
 
     def change_state(self, new_state_instance):
         self.state.on_exit()
